@@ -29,7 +29,7 @@ def task_combine_relaxation_bootstrap_results(
     out.to_pickle(path_to_combined)
 
 
-@pytask.mark.relax_boot
+@pytask.mark.relax_boot_local
 def task_plot_coverage_by_method(
     path_to_combined: Path = BLD
     / "data"

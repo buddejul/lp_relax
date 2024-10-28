@@ -1,6 +1,7 @@
 """Funcs for bootstrap simulations."""
 
 from functools import partial
+from typing import Any
 
 import numpy as np
 import optimagic as om  # type: ignore[import-untyped]
@@ -8,47 +9,40 @@ import pandas as pd  # type: ignore[import-untyped]
 
 from lp_relax.config import RNG
 from lp_relax.funcs.lp_relax import (
-    generate_poly_constraints,
+    generate_sphere_constraint,
 )
 
 
 def _linear_objective(params, slope):
-    return -(slope * params[0] + params[1])
+    return slope * params[0] + params[1]
 
 
 bounds = om.Bounds(lower=np.array([0, 0]), upper=np.array([1, 1]))
 
-linear = partial(
-    om.minimize,
-    fun=_linear_objective,
-    params=np.ones(2) * 0.5,
-    algorithm="scipy_lbfgsb",
-    bounds=bounds,
-)
+linear = {
+    "linear": partial(
+        om.minimize,
+        fun=_linear_objective,
+        params=np.ones(2) * 0.5,
+        algorithm="scipy_lbfgsb",
+        bounds=bounds,
+    )
+}
 
+k_to_sim = [2, 4, 10]
 
-constraint = om.NonlinearConstraint(
-    func=lambda x: np.sum((x - 0.5) ** 2),
-    upper_bound=0.5,
-)
+problems_convex = {
+    f"convex_sphere_{k}": partial(
+        om.minimize,
+        fun=_linear_objective,
+        params=np.ones(2) * 0.5,
+        algorithm="scipy_cobyla",
+        constraints=generate_sphere_constraint(num_dims=2, k=k),
+    )
+    for k in k_to_sim
+}
 
-convex = partial(
-    om.minimize,
-    fun=_linear_objective,
-    params=np.ones(2) * 0.5,
-    algorithm="scipy_cobyla",
-    constraints=[constraint],
-)
-
-constraints = generate_poly_constraints(2)
-
-convex_sharper = partial(
-    om.minimize,
-    fun=_linear_objective,
-    params=np.ones(2) * 0.5,
-    algorithm="scipy_cobyla",
-    constraints=constraints,
-)
+problems_to_sim = {**linear, **problems_convex}
 
 
 # Now do a bootstrap simulation
@@ -61,9 +55,11 @@ def _bootstrap_relax(
     num_obs: int,
     slope: float,
     alpha: float,
+    problems_dict: dict[str, partial[Any]] = problems_to_sim,
 ) -> pd.DataFrame:
     """Bootstrap simulation for relaxation of example problem."""
-    problems = [linear, convex, convex_sharper]
+    problems = list(problems_dict.values())
+    problem_names = list(problems_dict.keys())
 
     # ----------------------------------------------------------------------------------
     # Generate Data
@@ -124,10 +120,10 @@ def _bootstrap_relax(
             "lower_ci_one_sided": lower_ci_one_sided,
             "upper_ci_one_sided": upper_ci_one_sided,
         },
-        index=["linear", "convex", "convex_sharper"],
+        index=problem_names,
     )
 
-    out["true_fun_linear"] = linear(fun_kwargs={"slope": slope}).fun
+    out["true_fun_linear"] = problems_dict["linear"](fun_kwargs={"slope": slope}).fun
 
     return out
 
