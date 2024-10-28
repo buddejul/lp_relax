@@ -1,6 +1,6 @@
-@Unpublished{DOE2024,
-    Title  = "EXAMPLE PROJECT",
-    Author = "JANE DOE",
+@Unpublished{Budde2024Relaxation,
+    Title  = "LP Relaxation",
+    Author = "Julian Budde",
     Year   = "2024",
     Url    = "https://github.com/opensourceeconomics/econ-project-templates",
 }

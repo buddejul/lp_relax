@@ -3,7 +3,7 @@
 # ======================================================================================
 
 [project]
-name = "template_project"
+name = "lp_relax"
 description = "Template for reproducible research projects in economics"
 requires-python = ">=3.11"
 dynamic = ["version"]
@@ -21,10 +21,10 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
 ]
 authors = [
-    { name = "JANE DOE", email = "janedoe@example-university.com" },
+    { name = "Julian Budde", email = "s93jbudd@uni-bonn.de" },
 ]
 maintainers = [
-    { name = "JANE DOE", email = "janedoe@example-university.com" },
+    { name = "Julian Budde", email = "s93jbudd@uni-bonn.de" },
 ]
 
 [project.readme]
@@ -49,7 +49,7 @@ requires = ["hatchling", "hatch_vcs"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.hooks.vcs]
-version-file = "src/template_project/_version.py"
+version-file = "src/lp_relax/_version.py"
 
 [tool.hatch.build.targets.sdist]
 exclude = ["tests"]
@@ -70,7 +70,7 @@ allow-direct-references = true
 # ======================================================================================
 
 [tool.pytask.ini_options]
-paths = ["./src/template_project", "./documents"]
+paths = ["./src/lp_relax", "./documents"]
 pdbcls = "pdbp:Pdb"
 
 # ======================================================================================

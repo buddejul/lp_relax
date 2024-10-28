@@ -38,13 +38,13 @@ jobs:
       - name: Run full test suite on MacOS and Linux
         shell: bash -l {0}
         run: |
-          micromamba activate template_project
+          micromamba activate lp_relax
           pytest -v --cov=./ --cov-report=xml
         if: runner.os != 'Windows'
       - name: Run test suite except for pytask build on Windows
         shell: bash -l {0}
         run: |
-          micromamba activate template_project
+          micromamba activate lp_relax
           pytest -v -k "not pytask"
         if: runner.os == 'Windows'
       - name: Upload coverage reports

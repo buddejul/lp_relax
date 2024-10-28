@@ -1,5 +1,5 @@
 ---
-name: template_project
+name: lp_relax
 channels: [conda-forge, r, nodefaults]
 dependencies:
   - python ==3.12
