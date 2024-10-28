@@ -15,7 +15,7 @@
 .Rhistory
 
 # bld
-bld/
+/bld/
 
 # latex
 *.aux
