@@ -30,7 +30,7 @@ slopes = np.concatenate(
 class _Arguments(NamedTuple):
     slope: float
     path_to_results: Annotated[Path, Product]
-    num_sims: int = 10
+    num_sims: int = 1000
     num_boot: int = 1000
     num_obs: int = 10_000
     alpha: float = 0.05
@@ -43,13 +43,13 @@ ID_TO_KWARGS = {
             BLD / "data" / "relaxation_bootstrap" / f"results_{slope}.pkl"
         ),
     )
-    for slope in np.zeros(1)
+    for slope in slopes
 }
 
-for kwargs in ID_TO_KWARGS.values():
+for id_, kwargs in ID_TO_KWARGS.items():
 
     @pytask.mark.relax_boot_hpc
-    @task(kwargs=kwargs)  # type: ignore[arg-type]
+    @task(id=id_, kwargs=kwargs)  # type: ignore[arg-type]
     def task_relaxation_bootstrap(
         num_sims: int,
         num_boot: int,
