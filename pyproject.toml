@@ -93,6 +93,7 @@ extend-ignore = [
     "RET504", # Don't force to calculate upon return
     "S101",  # Use of `assert` detected.
     "S301",  # pickle module is unsafe
+    "C408", # Unnecessary dict call
 ]
 
 [tool.ruff.lint.per-file-ignores]
