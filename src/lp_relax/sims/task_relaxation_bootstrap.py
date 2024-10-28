@@ -30,9 +30,9 @@ slopes = np.concatenate(
 class _Arguments(NamedTuple):
     slope: float
     path_to_results: Annotated[Path, Product]
-    num_sims: int = 2
+    num_sims: int = 10
     num_boot: int = 1000
-    num_obs: int = 1000
+    num_obs: int = 10_000
     alpha: float = 0.05
 
 

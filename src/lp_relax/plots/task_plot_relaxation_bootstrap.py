@@ -14,7 +14,7 @@ from lp_relax.sims.task_relaxation_bootstrap import ID_TO_KWARGS
 RES_FILES = [val.path_to_results for key, val in ID_TO_KWARGS.items()]
 
 
-@pytask.mark.relax_boot
+@pytask.mark.relax_boot_local
 def task_combine_relaxation_bootstrap_results(
     res_files: list[Path] = RES_FILES,
     path_to_combined: Annotated[Path, Product] = (
