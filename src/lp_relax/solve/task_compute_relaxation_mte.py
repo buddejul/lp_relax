@@ -40,7 +40,7 @@ ID_TO_KWARGS = {
 
 for id_, kwargs in ID_TO_KWARGS.items():
 
-    @pytask.mark.relax()
+    @pytask.mark.relax
     @task(name=id_, kwargs=kwargs)  # type: ignore[arg-type]
     def task_relaxation_mte(
         path_to_data: Annotated[Path, Product],

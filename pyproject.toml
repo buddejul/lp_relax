@@ -75,6 +75,7 @@ pdbcls = "pdbp:Pdb"
 
 [tool.pytask.ini_options.markers]
 relax_boot_local = "A marker for relaxation task (local)."
+relax = "A marker for relaxation task."
 hpc = "A marker for relaxation task (hpc)."
 
 # ======================================================================================
