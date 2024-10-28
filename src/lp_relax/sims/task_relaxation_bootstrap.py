@@ -48,7 +48,7 @@ ID_TO_KWARGS = {
 
 for id_, kwargs in ID_TO_KWARGS.items():
 
-    @pytask.mark.relax_boot_hpc
+    @pytask.mark.hpc
     @task(id=id_, kwargs=kwargs)  # type: ignore[arg-type]
     def task_relaxation_bootstrap(
         num_sims: int,

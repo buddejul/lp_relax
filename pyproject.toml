@@ -75,7 +75,7 @@ pdbcls = "pdbp:Pdb"
 
 [tool.pytask.ini_options.markers]
 relax_boot_local = "A marker for relaxation task (local)."
-relax_boot_hpc = "A marker for relaxation task (hpc)."
+hpc = "A marker for relaxation task (hpc)."
 
 # ======================================================================================
 # Ruff configuration
