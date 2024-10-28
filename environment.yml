@@ -25,13 +25,16 @@ dependencies:
   - pandas >=2.2
   - plotly >=5.2.0,<6
 
-  # R template project dependencies
-  - pytask-r >=0.4.1
-  - pyreadr
-  - r-plyr
-  - r-precommit
-  - r-yaml
-  - r-forcats
+  # Optimization
+  - optimagic
+  - cyipopt
+  - nlopt
 
   # Install project
-  - pip: [-e ., pdbp, kaleido]
+  - pip:
+      - -e .
+      - pdbp
+      - coptpy
+      - kaleido==0.1.0post1
+      - git+https://github.com/buddejul/pyvmte@fix_second_step_error
+      - jax
