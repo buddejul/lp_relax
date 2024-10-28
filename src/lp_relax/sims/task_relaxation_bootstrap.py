@@ -45,7 +45,8 @@ ID_TO_KWARGS = {
         ),
     )
     for slope in slopes
-    for num_obs in [1_000, 10_000]
+    # for num_obs in [1_000, 10_000]
+    for num_obs in [10_000]
 }
 
 for id_, kwargs in ID_TO_KWARGS.items():

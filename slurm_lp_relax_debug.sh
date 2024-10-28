@@ -3,7 +3,7 @@
 #SBATCH --partition=intelsr_devel
 #SBATCH --time=0:10:00
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=42
+#SBATCH --cpus-per-task=21
 #SBATCH --mem-per-cpu=200M
 
 # --------------------------------------------------------------------------------------
@@ -19,4 +19,4 @@ source ~/.bashrc
 conda deactivate
 conda activate lp_relax
 
-pytask --parallel-backend loky -n 42 -m hpc
+pytask --parallel-backend loky -n 21 -m hpc
