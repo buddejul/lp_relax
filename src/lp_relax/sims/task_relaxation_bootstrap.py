@@ -30,20 +30,22 @@ slopes = np.concatenate(
 class _Arguments(NamedTuple):
     slope: float
     path_to_results: Annotated[Path, Product]
-    num_sims: int = 1000
+    num_sims: int = 10
     num_boot: int = 1000
     num_obs: int = 10_000
     alpha: float = 0.05
 
 
 ID_TO_KWARGS = {
-    f"slope_{slope}": _Arguments(
+    f"slope_{slope}_{num_obs}": _Arguments(
         slope=slope,
+        num_obs=num_obs,
         path_to_results=(
-            BLD / "data" / "relaxation_bootstrap" / f"results_{slope}.pkl"
+            BLD / "data" / "relaxation_bootstrap" / f"results_{slope}_{num_obs}.pkl"
         ),
     )
     for slope in slopes
+    for num_obs in [1_000, 10_000]
 }
 
 for id_, kwargs in ID_TO_KWARGS.items():
