@@ -57,6 +57,7 @@ for id_, kwargs in ID_TO_KWARGS.items():
                 k_bernstein=k_bernstein,
                 k_approximation=k_approximation,
                 algorithm="scipy_slsqp",
+                constraint_type="sphere",
             )
             for beta in beta_grid
         ]

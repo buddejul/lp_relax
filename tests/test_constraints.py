@@ -1,11 +1,13 @@
 """Tests constraints are working."""
 
 import numpy as np
+import optimagic as om  # type: ignore[import-untyped]
 
 from lp_relax.funcs.lp_relax import (
     generate_poly_constraints,
     generate_poly_constraints_new,
     generate_sphere_constraint,
+    solve_lp_convex,
 )
 
 
@@ -38,3 +40,22 @@ def test_generate_poly_constraints():
                     for constraint in constraints
                 ]
             )
+
+
+def test_om_with_poly_constraint():
+    num_dims = 2
+
+    constraints = generate_poly_constraints(num_dims)
+
+    om.minimize(
+        fun=lambda x: np.sum(x**2),
+        constraints=constraints,
+        params=np.ones(num_dims),
+        algorithm="ipopt",
+    )
+
+
+def test_solve_lp_convex():
+    solve_lp_convex(
+        beta=0.5, algorithm="ipopt", constraint_type="poly_old", s=10, k_bernstein=11
+    )

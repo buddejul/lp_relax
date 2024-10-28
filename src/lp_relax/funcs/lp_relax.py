@@ -139,7 +139,7 @@ def generate_poly_constraints_new(
     ub = (s + num_dims - 1) * 0.5**k
 
     # Constant such that the (scaled and centered) unit cube is contained
-    c = ((ub - 0.5**k * (num_dims - 1)) / s) ** (1 / k)
+    c = 0.5
 
     return [
         om.NonlinearConstraint(
@@ -170,6 +170,12 @@ def solve_lp_convex(
     return_optimizer: bool = False,  # noqa: FBT001, FBT002
 ) -> dict[str, float] | Callable:
     """Solve linear program and convex relaxation."""
+    allowed_constraint_types = ["sphere", "poly", "poly_old"]
+
+    if constraint_type not in allowed_constraint_types:
+        msg = f"Constraint type {constraint_type} not in {allowed_constraint_types}."
+        raise ValueError(msg)
+
     if identification_kwargs is None:
         identification_kwargs = _get_identification_kwargs(
             beta=beta,
@@ -178,7 +184,7 @@ def solve_lp_convex(
             idestimands="sharp",
         )
 
-    num_dims = len(identification_kwargs["basis_funcs"])
+    num_dims = len(identification_kwargs["basis_funcs"]) * 2
 
     res = identification(**identification_kwargs)
 
@@ -204,7 +210,7 @@ def solve_lp_convex(
         for i in range(num_rows)
     ]
 
-    if constraint_type == "norm":
+    if constraint_type == "sphere":
         assert k_approximation is not None
         constraints.extend(
             generate_sphere_constraint(num_dims=num_dims, k=k_approximation)
@@ -247,6 +253,15 @@ def _get_identification_kwargs(
     shape_constraints: dict | None = None,
     u_hi_extra: float = 0.2,
 ) -> dict:
+    allowed_bfunc_type = ["bernstein", "constant"]
+
+    if bfunc_type not in allowed_bfunc_type:
+        msg = f"bfunc_type {bfunc_type} not in {allowed_bfunc_type}."
+        raise ValueError(msg)
+
+    if shape_constraints is None:
+        shape_constraints = {}
+
     y0_c = 0.5 - beta / 2
     y1_c = 0.5 + beta / 2
 
