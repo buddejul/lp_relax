@@ -108,8 +108,6 @@ for id_, kwargs in ID_TO_KWARGS.items():
             yaxis_title="Minimized Objective",
         )
 
-        fig.show()
-
         fig.write_image(
             path_to_plot_value,
             scale=2,
@@ -186,8 +184,6 @@ for id_, kwargs in ID_TO_KWARGS.items():
         )
 
         fig.update_yaxes(range=[-0.5, 1])
-
-        fig.show()
 
         fig.write_image(
             path_to_plot_solutions,
