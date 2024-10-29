@@ -12,20 +12,25 @@ from pytask import Product, task
 from lp_relax.config import BLD
 from lp_relax.sims.funcs import problems_to_sim
 
-num_points = 1000
+num_points = 2000
 
 slope_grid = np.linspace(-1, 1, num_points)
 
 
 class _Arguments(NamedTuple):
-    path_to_plot: Annotated[Path, Product]
+    path_to_plot_value: Annotated[Path, Product]
+    path_to_plot_solutions: Annotated[Path, Product]
     slope_grid: np.ndarray = slope_grid
     problems: dict[str, partial] = problems_to_sim
 
 
 ID_TO_KWARGS = {
     f"plot_{slope_grid}": _Arguments(
-        path_to_plot=BLD.parent
+        path_to_plot_solutions=BLD.parent
+        / "documents"
+        / "figures"
+        / "solutions_by_constraint_set_dim_2.png",
+        path_to_plot_value=BLD.parent
         / "documents"
         / "figures"
         / "value_function_by_constraint_set_dim_2.png",
@@ -39,7 +44,8 @@ for id_, kwargs in ID_TO_KWARGS.items():
     @pytask.mark.local
     @task(id=id_, kwargs=kwargs)  # type: ignore[arg-type]
     def task_plot_relaxation_paper(
-        path_to_plot: Annotated[Path, Product],
+        path_to_plot_value: Annotated[Path, Product],
+        path_to_plot_solutions: Annotated[Path, Product],
         slope_grid: np.ndarray,
         problems: dict[str, partial],
     ) -> None:
@@ -105,7 +111,86 @@ for id_, kwargs in ID_TO_KWARGS.items():
         fig.show()
 
         fig.write_image(
-            path_to_plot,
+            path_to_plot_value,
+            scale=2,
+            width=800,
+            height=600,
+        )
+
+        # Plot solutions (x,y) against slope
+        fig = go.Figure()
+
+        col_to_name = {0: "x1", 1: "x2"}
+
+        dash_to_name = {
+            "x1": "solid",
+            "x2": "dash",
+        }
+
+        color_linear = "blue"
+
+        color_to_k_convex = {
+            2: "red",
+            4: "green",
+            10: "purple",
+        }
+
+        for col, name in col_to_name.items():
+            show_legend = bool(name == "x1")
+
+            fig.add_trace(
+                go.Scatter(
+                    x=slope_grid,
+                    y=solutions["linear"][:, col],
+                    mode="lines",
+                    line_dash=dash_to_name[name],
+                    line=dict(color=color_linear),
+                    legendgroup="linear",
+                    name="",
+                    legendgrouptitle={"text": "Linear Constraint"},
+                    showlegend=show_legend,
+                )
+            )
+
+            for k in convex_problems:
+                k_num = k.split("_")[-1]
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=slope_grid,
+                        y=solutions[k][:, col],
+                        mode="lines",
+                        line=dict(color=color_to_k_convex[int(k_num)]),
+                        line_dash=dash_to_name[name],
+                        name=f"k = {k_num}",
+                        legendgroup=f"convex, {name}",
+                        legendgrouptitle={"text": "Convex Constraints"},
+                        showlegend=show_legend,
+                    )
+                )
+
+        # Add note with number of grid points
+        fig.add_annotation(
+            x=0.75,
+            y=-1,
+            text=f"Number of grid points: {num_points}",
+            showarrow=False,
+            align="center",
+        )
+
+        # Titles
+        fig.update_layout(
+            title="Solutions by Constraint Set and Slope Parameter",
+            xaxis_title="Slope of x1 (c1)",
+            yaxis_title="Optimal Solution",
+        )
+
+        fig.update_yaxes(range=[-0.5, 1])
+
+        fig.show()
+
+        fig.write_image(
+            path_to_plot_solutions,
             scale=2,
             width=800,
             height=600,
