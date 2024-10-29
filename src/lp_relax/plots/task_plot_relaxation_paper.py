@@ -26,13 +26,13 @@ class _Arguments(NamedTuple):
 
 ID_TO_KWARGS = {
     f"plot_{slope_grid}": _Arguments(
-        path_to_plot_solutions=BLD.parent
-        / "documents"
+        path_to_plot_solutions=BLD
         / "figures"
+        / "relaxation_bootstrap"
         / "solutions_by_constraint_set_dim_2.png",
-        path_to_plot_value=BLD.parent
-        / "documents"
+        path_to_plot_value=BLD
         / "figures"
+        / "relaxation_bootstrap"
         / "value_function_by_constraint_set_dim_2.png",
         slope_grid=slope_grid,
         problems=problems_to_sim,
@@ -49,6 +49,14 @@ for id_, kwargs in ID_TO_KWARGS.items():
         slope_grid: np.ndarray,
         problems: dict[str, partial],
     ) -> None:
+        color_linear = "blue"
+
+        color_to_k_convex = {
+            2: "red",
+            4: "green",
+            10: "purple",
+        }
+
         # Split problems into linear and convex
         convex_problems = {k: v for k, v in problems.items() if k != "linear"}
 
@@ -76,6 +84,7 @@ for id_, kwargs in ID_TO_KWARGS.items():
                 mode="lines",
                 name="",
                 legendgroup="linear",
+                line=dict(color=color_linear),
                 legendgrouptitle={"text": "Linear Constraint"},
             )
         )
@@ -87,6 +96,7 @@ for id_, kwargs in ID_TO_KWARGS.items():
                     y=funs[k],
                     mode="lines",
                     legendgroup="convex",
+                    line=dict(color=color_to_k_convex[int(k.split("_")[-1])]),
                     name=f"k = {k.split('_')[-1]}",
                     legendgrouptitle={"text": "Convex Constraints"},
                 )
@@ -123,14 +133,6 @@ for id_, kwargs in ID_TO_KWARGS.items():
         dash_to_name = {
             "x1": "solid",
             "x2": "dash",
-        }
-
-        color_linear = "blue"
-
-        color_to_k_convex = {
-            2: "red",
-            4: "green",
-            10: "purple",
         }
 
         for col, name in col_to_name.items():

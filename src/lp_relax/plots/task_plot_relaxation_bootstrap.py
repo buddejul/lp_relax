@@ -88,42 +88,74 @@ for id_, kwargs in ID_TO_KWARGS.items():
         """Plot coverage by method and slope parameter."""
         combined = pd.read_pickle(path_to_combined)
 
-        data = combined.groupby(["method", "slope"]).mean().reset_index()
+        color_to_k_convex = {
+            "linear": "blue",
+            "convex_sphere_2": "red",
+            "convex_sphere_4": "green",
+            "convex_sphere_10": "purple",
+        }
+
+        data = combined.groupby(["method", "slope", "num_obs"]).mean().reset_index()
+
+        num_obs_to_plot = data["num_obs"].unique()
+        methods_to_plot = data.method.unique()
 
         fig = go.Figure()
 
-        for method in data.method.unique():
-            sub_data = data[data.method == method]
+        num_obs_to_dash = {1_000: "solid", 10_000: "dash"}
 
-            fig.add_trace(
-                go.Scatter(
-                    y=sub_data[stat_to_plot],
-                    x=sub_data["slope"],
-                    mode="lines+markers",
-                    name=f"{method.replace('_', ' ').capitalize()}",
-                ),
-            )
+        for num_obs in num_obs_to_plot:
+            for method in methods_to_plot:
+                sub_data = data[data.method == method]
+                sub_data = sub_data[sub_data.num_obs == num_obs]
+
+                fig.add_trace(
+                    go.Scatter(
+                        y=sub_data[stat_to_plot],
+                        x=sub_data["slope"],
+                        mode="lines+markers",
+                        line=dict(
+                            dash=num_obs_to_dash[num_obs],
+                            color=color_to_k_convex[method],
+                        ),
+                        marker=dict(color=color_to_k_convex[method]),
+                        name=f"N={num_obs}",
+                        legendgroup=method,
+                        legendgrouptitle=dict(
+                            text=f"{method.replace('_', ' ').capitalize()}"
+                        ),
+                    ),
+                )
 
         stat_to_title = {
             "covers_lower_one_sided": "Coverage Lower One-Sided CI",
             "lower_ci_one_sided": "Mean Lower One-Sided CI",
         }
 
+        subtitle = "<br><sup>Nominal Coverage 95%</sup>"
+
+        stat_to_x_axis_title = {
+            "covers_lower_one_sided": "Coverage",
+            "lower_ci_one_sided": "Average",
+        }
+
         fig.update_layout(
-            title=f"{stat_to_title} by Method and Parameter",
+            title=(
+                f"{stat_to_title[stat_to_plot]} by Method and Parameter" f"{subtitle}"
+            ),
             xaxis_title="Slope",
-            yaxis_title="Coverage",
+            yaxis_title=f"{stat_to_x_axis_title[stat_to_plot]}",
         )
 
         # Add note: Data is Normal with sigma = 1
         fig.add_annotation(
-            text="Data: Normal(, 1)",
+            text="Data: Normal(Slope, 1)",
             xref="paper",
             yref="paper",
             x=1,
-            y=-0.1,
+            y=-0.2,
             showarrow=False,
         )
 
         fig.write_html(path_to_plot_html)
-        fig.write_html(path_to_plot_png)
+        fig.write_image(path_to_plot_png)
