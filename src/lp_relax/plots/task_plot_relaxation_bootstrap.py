@@ -10,7 +10,7 @@ import plotly.graph_objects as go  # type: ignore[import-untyped]
 import pytask
 from pytask import Product, task
 
-from lp_relax.config import BLD, SRC
+from lp_relax.config import BLD, K_TO_SIMULATE, SRC
 
 JOBIDS_TO_PLOT = [17692621]
 
@@ -93,16 +93,17 @@ for id_, kwargs in ID_TO_KWARGS.items():
             "convex_sphere_2": "red",
             "convex_sphere_4": "green",
             "convex_sphere_10": "purple",
+            "convex_sphere_20": "gray",
         }
 
         data = combined.groupby(["method", "slope", "num_obs"]).mean().reset_index()
 
         num_obs_to_plot = data["num_obs"].unique()
-        methods_to_plot = data.method.unique()
+        methods_to_plot = ["linear"] + [f"convex_sphere_{k}" for k in K_TO_SIMULATE]
 
         fig = go.Figure()
 
-        num_obs_to_dash = {1_000: "solid", 10_000: "dash"}
+        num_obs_to_dash = {1_000: "solid", 10_000: "dot"}
 
         for num_obs in num_obs_to_plot:
             for method in methods_to_plot:

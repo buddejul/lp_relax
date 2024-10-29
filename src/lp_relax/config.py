@@ -18,3 +18,5 @@ Y1_NT = 0.45
 Y0_NT = 0.2
 
 RNG = np.random.default_rng()
+
+K_TO_SIMULATE = [2, 4, 10, 20]

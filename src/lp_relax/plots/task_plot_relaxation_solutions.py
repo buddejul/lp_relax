@@ -1,4 +1,4 @@
-"""Plot task for figures in paper."""
+"""Plot task for solution figures."""
 
 from functools import partial
 from pathlib import Path
@@ -43,7 +43,7 @@ for id_, kwargs in ID_TO_KWARGS.items():
 
     @pytask.mark.local
     @task(id=id_, kwargs=kwargs)  # type: ignore[arg-type]
-    def task_plot_relaxation_paper(
+    def task_plot_relaxation_solutions(
         path_to_plot_value: Annotated[Path, Product],
         path_to_plot_solutions: Annotated[Path, Product],
         slope_grid: np.ndarray,
@@ -55,6 +55,7 @@ for id_, kwargs in ID_TO_KWARGS.items():
             2: "red",
             4: "green",
             10: "purple",
+            20: "gray",
         }
 
         # Split problems into linear and convex

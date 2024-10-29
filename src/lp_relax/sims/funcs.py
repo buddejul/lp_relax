@@ -7,7 +7,7 @@ import numpy as np
 import optimagic as om  # type: ignore[import-untyped]
 import pandas as pd  # type: ignore[import-untyped]
 
-from lp_relax.config import RNG
+from lp_relax.config import K_TO_SIMULATE, RNG
 from lp_relax.funcs.lp_relax import (
     generate_sphere_constraint,
 )
@@ -29,7 +29,6 @@ linear = {
     )
 }
 
-k_to_sim = [2, 4, 10]
 
 problems_convex = {
     f"convex_sphere_{k}": partial(
@@ -39,7 +38,7 @@ problems_convex = {
         algorithm="scipy_cobyla",
         constraints=generate_sphere_constraint(num_dims=2, k=k),
     )
-    for k in k_to_sim
+    for k in K_TO_SIMULATE
 }
 
 problems_to_sim = {**linear, **problems_convex}
