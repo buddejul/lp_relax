@@ -3,12 +3,12 @@
 import shutil
 import tarfile
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, NamedTuple
 
 import pandas as pd  # type: ignore[import-untyped]
 import plotly.graph_objects as go  # type: ignore[import-untyped]
 import pytask
-from pytask import Product
+from pytask import Product, task
 
 from lp_relax.config import BLD, SRC
 
@@ -45,55 +45,85 @@ def task_combine_relaxation_bootstrap_results(
     shutil.rmtree(tmp_dir)
 
 
-@pytask.mark.local
-def task_plot_coverage_by_method(
-    path_to_combined: Path = BLD
-    / "data"
-    / "relaxation_bootstrap"
-    / "relaxation_bootstrap_combined.pkl",
-    path_to_plot_html: Annotated[Path, Product] = BLD
-    / "figures"
-    / "relaxation_bootstrap"
-    / "coverage_by_method.html",
-    path_to_plot_png: Annotated[Path, Product] = BLD
-    / "figures"
-    / "relaxation_bootstrap"
-    / "coverage_by_method.png",
-) -> None:
-    """Plot coverage by method and slope parameter."""
-    combined = pd.read_pickle(path_to_combined)
+class _Arguments(NamedTuple):
+    path_to_plot_html: Annotated[Path, Product]
+    path_to_plot_png: Annotated[Path, Product]
+    stat_to_plot: str
 
-    data = combined.groupby(["method", "slope"]).mean().reset_index()
 
-    fig = go.Figure()
+ID_TO_KWARGS = {
+    f"{stat_to_plot}": _Arguments(
+        path_to_plot_html=BLD
+        / "figures"
+        / "relaxation_bootstrap"
+        / f"{stat_to_plot}_by_method.html",
+        path_to_plot_png=BLD
+        / "figures"
+        / "relaxation_bootstrap"
+        / f"{stat_to_plot}_by_method.png",
+        stat_to_plot=stat_to_plot,
+    )
+    for stat_to_plot in ["covers_lower_one_sided", "lower_ci_one_sided"]
+}
 
-    for method in data.method.unique():
-        sub_data = data[data.method == method]
+for id_, kwargs in ID_TO_KWARGS.items():
 
-        fig.add_trace(
-            go.Scatter(
-                y=sub_data["covers_lower_one_sided"],
-                x=sub_data["slope"],
-                mode="lines+markers",
-                name=f"{method.replace('_', ' ').capitalize()}",
-            ),
+    @task(id=id_, kwargs=kwargs)  # type: ignore[arg-type]
+    @pytask.mark.local
+    def task_plot_coverage_by_method(
+        stat_to_plot: str,
+        path_to_combined: Path = BLD
+        / "data"
+        / "relaxation_bootstrap"
+        / "relaxation_bootstrap_combined.pkl",
+        path_to_plot_html: Annotated[Path, Product] = BLD
+        / "figures"
+        / "relaxation_bootstrap"
+        / "coverage_by_method.html",
+        path_to_plot_png: Annotated[Path, Product] = BLD
+        / "figures"
+        / "relaxation_bootstrap"
+        / "coverage_by_method.png",
+    ) -> None:
+        """Plot coverage by method and slope parameter."""
+        combined = pd.read_pickle(path_to_combined)
+
+        data = combined.groupby(["method", "slope"]).mean().reset_index()
+
+        fig = go.Figure()
+
+        for method in data.method.unique():
+            sub_data = data[data.method == method]
+
+            fig.add_trace(
+                go.Scatter(
+                    y=sub_data[stat_to_plot],
+                    x=sub_data["slope"],
+                    mode="lines+markers",
+                    name=f"{method.replace('_', ' ').capitalize()}",
+                ),
+            )
+
+        stat_to_title = {
+            "covers_lower_one_sided": "Coverage Lower One-Sided CI",
+            "lower_ci_one_sided": "Mean Lower One-Sided CI",
+        }
+
+        fig.update_layout(
+            title=f"{stat_to_title} by Method and Parameter",
+            xaxis_title="Slope",
+            yaxis_title="Coverage",
         )
 
-    fig.update_layout(
-        title="Coverage by Method and Parameter",
-        xaxis_title="Slope",
-        yaxis_title="Coverage",
-    )
+        # Add note: Data is Normal with sigma = 1
+        fig.add_annotation(
+            text="Data: Normal(, 1)",
+            xref="paper",
+            yref="paper",
+            x=1,
+            y=-0.1,
+            showarrow=False,
+        )
 
-    # Add note: Data is Normal with sigma = 1
-    fig.add_annotation(
-        text="Data: Normal(, 1)",
-        xref="paper",
-        yref="paper",
-        x=1,
-        y=-0.1,
-        showarrow=False,
-    )
-
-    fig.write_html(path_to_plot_html)
-    fig.write_html(path_to_plot_png)
+        fig.write_html(path_to_plot_html)
+        fig.write_html(path_to_plot_png)
