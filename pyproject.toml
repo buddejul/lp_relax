@@ -77,6 +77,7 @@ pdbcls = "pdbp:Pdb"
 relax_boot_local = "A marker for relaxation task (local)."
 relax = "A marker for relaxation task."
 hpc = "A marker for relaxation task (hpc)."
+local = "A marker for local task."
 
 # ======================================================================================
 # Ruff configuration
