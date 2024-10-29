@@ -53,7 +53,7 @@ for id_, kwargs in ID_TO_KWARGS.items():
 
     @pytask.mark.hpc
     @task(id=id_, kwargs=kwargs)  # type: ignore[arg-type]
-    def task_relaxation_bootstrap(
+    def task_sims_relaxation_bootstrap(
         num_sims: int,
         num_boot: int,
         num_obs: int,
