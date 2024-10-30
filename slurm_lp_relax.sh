@@ -25,6 +25,19 @@
 # Memory Utilized: 3.66 GB
 # Memory Efficiency: 89.16% of 4.10 GB
 
+# Same simulation, but adding k = 20.
+# (base) [s93jbudd_hpc@login01 lp_relax]$ seff 17777260
+# Job ID: 17777260
+# Cluster: marvin
+# User/Group: s93jbudd_hpc/hpcusers
+# State: COMPLETED (exit code 0)
+# Nodes: 1
+# Cores per node: 21
+# CPU Utilized: 4-21:13:08
+# CPU Efficiency: 84.53% of 5-18:40:33 core-walltime
+# Job Wall-clock time: 06:36:13
+# Memory Utilized: 3.68 GB
+# Memory Efficiency: 59.75% of 6.15 GB
 # --------------------------------------------------------------------------------------
 # Start script
 # --------------------------------------------------------------------------------------

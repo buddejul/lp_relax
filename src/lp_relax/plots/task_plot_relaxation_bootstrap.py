@@ -12,7 +12,7 @@ from pytask import Product, task
 
 from lp_relax.config import BLD, K_TO_SIMULATE, SRC
 
-JOBIDS_TO_PLOT = [17692621]
+JOBIDS_TO_PLOT = [17692621, 17777260]
 
 RES_FILES_TAR = [SRC / "marvin" / f"{jobid}.tar.gz" for jobid in JOBIDS_TO_PLOT]
 
@@ -107,8 +107,17 @@ for id_, kwargs in ID_TO_KWARGS.items():
 
         for num_obs in num_obs_to_plot:
             for method in methods_to_plot:
+                _m = (
+                    method.replace("_", " ")
+                    .capitalize()
+                    .replace("Convex sphere", "K = ")
+                )
+
                 sub_data = data[data.method == method]
                 sub_data = sub_data[sub_data.num_obs == num_obs]
+
+                num_obs_show_legend = 1000
+                show_legend = bool(num_obs == num_obs_show_legend)
 
                 fig.add_trace(
                     go.Scatter(
@@ -120,13 +129,27 @@ for id_, kwargs in ID_TO_KWARGS.items():
                             color=color_to_k_convex[method],
                         ),
                         marker=dict(color=color_to_k_convex[method]),
-                        name=f"N={num_obs}",
-                        legendgroup=method,
-                        legendgrouptitle=dict(
-                            text=f"{method.replace('_', ' ').capitalize()}"
-                        ),
+                        name=(f"{_m}"),
+                        legendgroup=f"{num_obs}",
+                        showlegend=show_legend,
+                        legendgrouptitle=dict(text="Feasible Regions"),
                     ),
                 )
+
+        # Add the line type by num_obs to the legend
+        for num_obs in num_obs_to_plot:
+            fig.add_trace(
+                go.Scatter(
+                    y=[None],
+                    x=[None],
+                    mode="lines+markers",
+                    line=dict(dash=num_obs_to_dash[num_obs], color="black"),
+                    name=f"N = {num_obs}",
+                    legendgroup="Obs",
+                    legendgrouptitle=dict(text="Sample Size"),
+                    showlegend=True,
+                )
+            )
 
         stat_to_title = {
             "covers_lower_one_sided": "Coverage Lower One-Sided CI",
@@ -148,9 +171,11 @@ for id_, kwargs in ID_TO_KWARGS.items():
             yaxis_title=f"{stat_to_x_axis_title[stat_to_plot]}",
         )
 
-        # Add note: Data is Normal with sigma = 1
+        assert len(data["num_sims"].unique()) == 1
+        num_simulations = data["num_sims"].unique()[0]
+
         fig.add_annotation(
-            text="Data: Normal(Slope, 1)",
+            text=f"Data: Normal(Slope, 1), {int(num_simulations)} Simulations",
             xref="paper",
             yref="paper",
             x=1,
