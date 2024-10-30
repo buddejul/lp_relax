@@ -18,8 +18,10 @@ DIR_TARGET="./marvin/$JOBID"
 
 cd C:/Users/budde/projects/lp_relax/src/lp_relax/ || exit
 
-# Create a directory with the job_id
-mkdir -p $DIR_TARGET
+# Now compress
+tar -czvf $DIR_TARGET.tar.gz $DIR_TARGET
 
-# Copy the results from marvin
-scp -r -C $USER@marvin.hpc.uni-bonn.de:/lustre/scratch/data/$USER-thesis/lp_relax/bld/ $DIR_TARGET
+echo "[$DATE] Copied results from marvin for job $JOBID"
+
+# Delete the directory
+rm -r $DIR_TARGET
