@@ -13,47 +13,56 @@ from lp_relax.config import BLD
 
 # Build matrices from scratch, then optimize.
 # For the non-linear one, add the unit-ball constraint
-from lp_relax.solve.task_compute_relaxation_mte import ID_TO_KWARGS
 
-path_to_results = [val.path_to_data for val in ID_TO_KWARGS.values()]
+# TODO(@buddeul): fix this after re-running: Currently force file collection and not
+# depending on computation task. This was to avoid long runtimes.
+
+path_to_results = BLD / "data" / "relaxation"
+
+algorithms_to_plot = ["scipy_slsqp", "scipy_cobyla"]
 
 
 class _Arguments(NamedTuple):
-    path_to_results: list[Path]
     path_to_plot: Annotated[Path, Product]
     path_to_plot_html: Annotated[Path, Product]
     k_bernstein: int
+    algorithm: str
 
 
 KWARGS = {
-    "k_bernstein_11": _Arguments(
-        path_to_results=path_to_results,
+    f"k_bernstein_11_{algorithm}": _Arguments(
         path_to_plot=BLD
         / "figures"
         / "relaxation"
-        / "relaxation_mte_k_bernstein_11.png",
+        / f"relaxation_mte_k_bernstein_11_{algorithm}.png",
         path_to_plot_html=BLD
         / "figures"
         / "relaxation"
-        / "relaxation_mte_k_bernstein_11.html",
+        / f"relaxation_mte_k_bernstein_11_{algorithm}.html",
         k_bernstein=11,
-    ),
+        algorithm=algorithm,
+    )
+    for algorithm in algorithms_to_plot
 }
 
 for id_, kwargs in KWARGS.items():
 
-    @pytask.mark.relax
+    @pytask.mark.relax_mte_plots
     @task(name=id_, kwargs=kwargs)  # type: ignore[arg-type]
     def task_plot_relaxation_mte(
-        path_to_results: list[Path],
         path_to_plot: Annotated[Path, Product],
         path_to_plot_html: Annotated[Path, Product],
         k_bernstein: int,
+        algorithm: str,
     ) -> None:
         """Task for solving original and relaxed convex problem."""
         # Load results from identification task
         results = []
-        for path in path_to_results:
+
+        # Get all pkl files in path_to_results
+        files_results = list(Path(path_to_results).rglob("*.pkl"))
+
+        for path in files_results:
             with Path.open(path, "rb") as file:
                 results.append(pickle.load(file))
 
@@ -61,6 +70,7 @@ for id_, kwargs in KWARGS.items():
         data = pd.concat(results)
 
         data = data[data["k_bernstein"] == k_bernstein]
+        data = data[data["algorithm"] == algorithm]
 
         # Plot the results by k_approximation
 
@@ -103,16 +113,79 @@ for id_, kwargs in KWARGS.items():
         fig.write_html(path_to_plot_html)
 
 
-# def task_plot_relaxation_mte() -> None:
-#     """Task for plotting the relaxation of the MTE problem."""
-#         result_polynomial_degree4,
+@pytask.mark.relax_mte_plots
+def task_plot_relaxation_mte_multiple_algorithms(
+    k_approximation: int = 20,
+    k_bernstein: int = 11,
+    path_to_plot: Annotated[Path, Product] = (
+        BLD
+        / "figures"
+        / "relaxation"
+        / "relaxation_mte_k_bernstein_11_k_20_by_algorithm.png"
+    ),
+) -> None:
+    """Task for solving original and relaxed convex problem."""
+    # Load results from identification task
+    results = []
 
+    # Get all pkl files in path_to_results
+    files_results = list(Path(path_to_results).rglob("*.pkl"))
 
-#     fig.add_trace(
-#         go.Scatter(
-#         ),
+    for path in files_results:
+        with Path.open(path, "rb") as file:
+            results.append(pickle.load(file))
 
-#     for constraint in ["unit_ball", "polynomial_degree4"]:
-#         fig.add_trace(
-#             go.Scatter(
-#             ),
+    # Merge the dataframes
+    data = pd.concat(results)
+
+    data = data[data["k_bernstein"] == k_bernstein]
+    data = data[data["k_approximation"] == k_approximation]
+
+    # Plot the results by k_approximation
+
+    fig = go.Figure()
+
+    for algorithm in algorithms_to_plot:
+        data_algorithm = data[data["algorithm"] == algorithm].reset_index(
+            names="beta",
+        )
+
+        fig.add_trace(
+            go.Scatter(
+                x=data_algorithm["beta"],
+                y=data_algorithm["convex"],
+                mode="lines",
+                name=f"{algorithm}",
+                legendgroup=f"{algorithm}",
+            ),
+        )
+
+    # Plot the LP solution
+    data_lp = data[data["algorithm"] == "scipy_slsqp"].reset_index(names="beta")
+
+    fig.add_trace(
+        go.Scatter(
+            x=data_lp["beta"],
+            y=data_lp["lp"],
+            mode="lines",
+            name="LP Solution",
+            legendgroup="lp",
+        ),
+    )
+
+    subtitle = (
+        f"<br><sup> Bernstein Degree {k_bernstein},"
+        f"K = {k_approximation}, No shape restrictions</sup>"
+    )
+
+    fig.update_layout(
+        title=(
+            "Relaxation of MTE Problem to Convex Problem: Algorithm Comparison"
+            + subtitle
+        ),
+        xaxis_title="Beta",
+        yaxis_title="Value",
+        legend_title="",
+    )
+
+    fig.write_image(path_to_plot)

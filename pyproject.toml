@@ -100,6 +100,8 @@ extend-ignore = [
     "S101",  # Use of `assert` detected.
     "S301",  # pickle module is unsafe
     "C408", # Unnecessary dict call
+    "FIX002", # Line contains TODO, consider resolving the issue
+    "TD003", # Missing issue link on the line following this TODO
 ]
 
 [tool.ruff.lint.per-file-ignores]
