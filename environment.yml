@@ -38,3 +38,4 @@ dependencies:
       - kaleido
       - git+https://github.com/buddejul/pyvmte@fix_second_step_error
       - jax
+      - ipopt
